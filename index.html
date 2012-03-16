@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>API</title>
+    </head>
+    <body>
+        <h1>Sample API</h1>
+        <a href="#" id="doit">Do It!</a>
+        <div id="result">
+            (no results)
+        </div>
+
+        <iframe id="api-frame" src="http://example2.com/~solarhess/postapi/api.html"> </iframe>
+        
+        <script type="text/javascript" charset="utf-8" src="js/jquery-1.7.1.min.js">  </script>
+        <script type="text/javascript" charset="utf-8" src="js/jquery-ui-1.8.16.custom.min.js">  </script>
+        <script type="text/javascript" charset="utf-8" src="js/api.js">  </script>
+        <script type="text/javascript" charset="utf-8">
+            $(function() {
+                var $apiFrame = $("#api-frame").postapi({url: "http://example2.com/~solarhess/postapi/"});
+                $("#doit").click(function(evt) {
+                    evt.preventDefault();
+                    var ajaxOpts = {
+        				dataType: "json",
+        				contentType: "application/json",
+                        url: "sample.json",
+                        success: function(data) {
+                            alert("It worked!: "+JSON.stringify(data));
+                        },
+                        error: function(jqxhr) {
+                            alert("It failed!: "+JSON.stringify(jqxhr));
+                        }
+                    }
+                    // $.ajax(ajaxOpts);
+                    $apiFrame.postapi("sendRequest", ajaxOpts);
+                });
+            })
+        </script>
+    </body>
+</html>
