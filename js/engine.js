@@ -1,5 +1,4 @@
 (function() {
-//    window.parent.postMessage('{"from":"postapi","type":"PostApiReady"}',"*")
 
     $(window).bind('message.postapi', function(evt) {
         var message = JSON.parse(evt.originalEvent.data);
@@ -9,40 +8,56 @@
     });
     
     function _messageReceived(message) {
-        console.log("Engine Message Received");
-        console.log(message);
-        
         if(message.type = "AjaxRequest") {
             _ajaxRequest(message);
         }
     }
     
     function _ajaxRequest(message) {
-        message.ajaxOptions.error = function(jqxhr) {
-            _error(message.requestId, jqxhr)
-        };
-        message.ajaxOptions.success = function(data) {
-            _success(message.requestId, data)
-        };
-        
+        if(message.ajaxOptions.error) {
+            message.ajaxOptions.error = function(jqxhr, data) {
+                _error(message.requestId, jqxhr, data)
+            };
+        }
+        if(message.ajaxOptions.success) {
+            message.ajaxOptions.success = function(data) {
+                _success(message.requestId, data)
+            };
+        }        
+        if(message.ajaxOptions.complete) {
+            message.ajaxOptions.complete = function(jqxhr, data) {
+                _complete(message.requestId, jqxhr, data)
+            };
+        }        
         $.ajax(message.ajaxOptions);
     }
 
-    function _error(requestId, jqxhr) {
+    function _error(requestId, jqxhr, data) {
         var responseMessage = {
             "from":"postapi",
             "type":"AjaxResponseError",
             "requestId" : requestId,
-            "jqxhr" : jqxhr
+            "jqxhr" : jqxhr,
+            "data" : data,
         };
         window.parent.postMessage(JSON.stringify(responseMessage),"*");
     }
     function _success(requestId, data) {
         var responseMessage = {
             "from":"postapi",
-            "type":"AjaxResponse",
+            "type":"AjaxResponseSuccess",
             "requestId" : requestId,
             "data" : data
+        };
+        window.parent.postMessage(JSON.stringify(responseMessage),"*");
+    }
+    function _complete(requestId, jqxhr, data) {
+        var responseMessage = {
+            "from":"postapi",
+            "type":"AjaxResponseComplete",
+            "requestId" : requestId,
+            "data" : data,
+            "jqxhr": jqxhr
         };
         window.parent.postMessage(JSON.stringify(responseMessage),"*");
     }

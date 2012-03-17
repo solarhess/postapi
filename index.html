@@ -9,8 +9,9 @@
         <div id="result">
             (no results)
         </div>
+        <div id="api-frame"> </div>
 
-        <iframe id="api-frame" src="http://example2.com/~solarhess/postapi/api.html"> </iframe>
+        
         
         <script type="text/javascript" charset="utf-8" src="js/jquery-1.7.1.min.js">  </script>
         <script type="text/javascript" charset="utf-8" src="js/jquery-ui-1.8.16.custom.min.js">  </script>
@@ -25,10 +26,13 @@
         				contentType: "application/json",
                         url: "sample.json",
                         success: function(data) {
-                            alert("It worked!: "+JSON.stringify(data));
+                            console.log("SUCCESS  data: "+JSON.stringify(data));
                         },
-                        error: function(jqxhr) {
-                            alert("It failed!: "+JSON.stringify(jqxhr));
+                        error: function(jqxhr, data) {
+                            console.log("ERROR jqxhr:"+JSON.stringify(jqxhr)+ "  data:"+JSON.strinify(data));
+                        },
+                        complete: function(jqxhr, data) {
+                            console.log("COMPLETE jqxhr:"+JSON.stringify(jqxhr)+ "  data:"+JSON.strinify(data));
                         }
                     }
                     // $.ajax(ajaxOpts);
