@@ -54,62 +54,62 @@
     PostAPI.prototype = {
         _defaultOptions : function() {
             return {
-    			url :   "http://example2.com/~solarhess/postapi",
-    			postapiUrl :   "http://example2.com/~solarhess/postapi/api.html",
-    			oauthAuthorizationUrl : null,
-    			oauthTokenUrl : null,
-    			oauthClientId : null,
-    			oauthClientSecret : "",
-    			oauthScope : "read",
-    			oauthToken : _tokenHashParam(),
-    			oauthCode : _codeParam(),
-    			oauthRedirectUri : _redirectUri()
-    		}
+                url :   "http://example2.com/~solarhess/postapi",
+                postapiUrl :   "http://example2.com/~solarhess/postapi/api.html",
+                oauthAuthorizationUrl : null,
+                oauthTokenUrl : null,
+                oauthClientId : null,
+                oauthClientSecret : "",
+                oauthScope : "read",
+                oauthToken : _tokenHashParam(),
+                oauthCode : _codeParam(),
+                oauthRedirectUri : _redirectUri()
+            }
         },
-		/*************************
-		 *    PRIVATE METHODS    *
-		 *************************/
-		_create : function(options){
-		    var $this = this;
+        /*************************
+         *    PRIVATE METHODS    *
+         *************************/
+        _create : function(options){
+            var $this = this;
             
             /* Map default options to $this.optionName */
-		    $.each($this._defaultOptions(), function(k,v){
-		        $this[k] = v;
-		    });
-		    
+            $.each($this._defaultOptions(), function(k,v){
+                $this[k] = v;
+            });
+            
 
-		    /* Map user-defined options to $this.optionName*/
-		    $.each(options, function(k,v){
-		        $this[k] = v;
-		    });
+            /* Map user-defined options to $this.optionName*/
+            $.each(options, function(k,v){
+                $this[k] = v;
+            });
 
-		    // ensure that URL ends with a / character
-		    if(! /\/$/.exec($this.baseurl)) {
-		        $this.baseurl += "/";
-		    }
-		    
-		    $this.requests = {};
-		    $this.counter = counter++;
+            // ensure that URL ends with a / character
+            if(! /\/$/.exec($this.baseurl)) {
+                $this.baseurl += "/";
+            }
+            
+            $this.requests = {};
+            $this.counter = counter++;
 
-		    $this.$iframe = $('<iframe src="'+$this.postapiUrl+'"> </iframe>');
+            $this.$iframe = $('<iframe src="'+$this.postapiUrl+'"> </iframe>');
 
-		    $this.$iframe.css("position", "fixed");
-		    $this.$iframe.css("left", "-100px");
-		    $this.$iframe.css("top", "-100px");
-		    $this.$iframe.css("width", "1px");
-		    $this.$iframe.css("height", "1px");
+            $this.$iframe.css("position", "fixed");
+            $this.$iframe.css("left", "-100px");
+            $this.$iframe.css("top", "-100px");
+            $this.$iframe.css("width", "1px");
+            $this.$iframe.css("height", "1px");
 
-		    document.body.appendChild($this.$iframe.get(0));
-		},
+            document.body.appendChild($this.$iframe.get(0));
+        },
 
-		_init : function() {
-		    var $this = this;
-		    $(window).unbind('message.postapi'+$this.counter);
+        _init : function() {
+            var $this = this;
+            $(window).unbind('message.postapi'+$this.counter);
             $(window).bind('message.postapi'+$this.counter, function(evt) {
                 var message = JSON.parse(evt.originalEvent.data);
-        		if(message.from == "postapi" && message.type) {
-        		    $this._messageReceived(message);
-        		}
+                if(message.from == "postapi" && message.type) {
+                    $this._messageReceived(message);
+                }
             });
             
             if(this.oauthCode) {
@@ -130,17 +130,17 @@
                 url: this.oauthTokenUrl,
                 type: "POST",
                 dataType: "json",
-				data: {
-				    grant_type: "authorization_code",
-				    code: this.oauthCode,
-				    redirect_uri: this.oauthRedirectUri,
-				    scope: $this.oauthScope,
-				    username: this.oauthClientId,
-				    password: this.oauthClientSecret
-				},
-				success : function(data) {
-				    $this._handleOAuthTokenResponse(data);
-				}
+                data: {
+                    grant_type: "authorization_code",
+                    code: this.oauthCode,
+                    redirect_uri: this.oauthRedirectUri,
+                    scope: $this.oauthScope,
+                    username: this.oauthClientId,
+                    password: this.oauthClientSecret
+                },
+                success : function(data) {
+                    $this._handleOAuthTokenResponse(data);
+                }
             })
         },
         
@@ -204,27 +204,27 @@
                 } else {
                     newOptions[k] = true;
                 }
-		    });
-		    
-		    if(! /^http(s?)/.exec(newOptions.url)) {
-    		    newOptions.url = $this.baseurl + newOptions.url;
-		    }
+            });
+            
+            if(! /^http(s?)/.exec(newOptions.url)) {
+                newOptions.url = $this.baseurl + newOptions.url;
+            }
 
-		    if(this._getOAuthAccessToken()) {
-    		    if(! newOptions.headers) {
-    		        newOptions.headers = {};
-    		    }
-    		    newOptions.headers["Authorization"] = "Bearer " + this._getOAuthAccessToken();
-		    }
-		    
-		    
-		    message = JSON.stringify({
+            if(this._getOAuthAccessToken()) {
+                if(! newOptions.headers) {
+                    newOptions.headers = {};
+                }
+                newOptions.headers["Authorization"] = "Bearer " + this._getOAuthAccessToken();
+            }
+            
+            
+            message = JSON.stringify({
                 from: 'postapi',
                 type: 'AjaxRequest',
                 requestId: requestId,
                 ajaxOptions : newOptions
             });
-    		
+            
             $this.requests[requestId] = ajaxOptions;
             $this.$iframe[0].contentWindow.postMessage(message, this.baseurl);
         },

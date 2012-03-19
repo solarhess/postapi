@@ -16,8 +16,11 @@
             handle the OAuth2 endpoint integration.</p>
 
         <h2>OAuth</h2>
-        <a href="#" id="authorizeToken">Authorize With Token!</a>
-        <a href="#" id="authorizeCode">Authorize With Code!</a>
+        <p>
+        <a href="#" id="authorizeToken">Authorize Implicit!</a>
+        <a href="#" id="authorizeCode">Authorize Code!</a>
+        </p>
+
 
         <h2>Data</h2>
         <a href="#" id="doit">Do It!</a>
@@ -36,15 +39,15 @@
                     baseurl: "http://example2.com:8080/concord/webservice/rest/",
                     postapiUrl: "http://example2.com:8080/concord/js/other/postapi/api.html",
                     oauthAuthorizationUrl : "http://example2.com:8080/concord/oauth/authorize.sp",
-        			oauthTokenUrl : "http://example2.com:8080/concord/oauth/token.sp",
-        			oauthClientId : "my-trusted-client"
-        		});
-        		
+                    oauthTokenUrl : "http://example2.com:8080/concord/oauth/token.sp",
+                    oauthClientId : "my-trusted-client"
+                });
+                
                 $("#doit").click(function(evt) {
                     evt.preventDefault();
                     var ajaxOpts = {
-        				dataType: "json",
-        				contentType: "application/json",
+                        dataType: "json",
+                        contentType: "application/json",
                         url: "preferences/user",
                         success: function(data) {
                             $("#result").text(JSON.stringify(data));
