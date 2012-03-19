@@ -1,15 +1,23 @@
 <!DOCTYPE html>
 <html>
+
     <head>
-        <title>API</title>
+        <title>PostAPI</title>
     </head>
+    
     <body>
-        <h1>Sample API</h1>
+        <h1>PostAPI - Cross-Domain Scripting with PostMessage</h1>
+        <p>Do you want to expose your API to JavaScript mashup and jsonp just won't get the job done?
+            use PostAPI to handle it.  PostAPI allows you send full-fledged XmlHttpRequests across
+            domains.  It does this using the postMessage function of a browser to allow an
+            iFrame to talk with its parent window</p>
+
+        <p>OAuth2 is integrated into the thing as well! You can specify a few basic parameters and it will 
+            handle the OAuth2 endpoint integration.</p>
 
         <h2>OAuth</h2>
         <a href="#" id="authorizeToken">Authorize With Token!</a>
         <a href="#" id="authorizeCode">Authorize With Code!</a>
-        <a href="#" id="finishAuth">Finish Auth!</a>
 
         <h2>Data</h2>
         <a href="#" id="doit">Do It!</a>
@@ -21,61 +29,15 @@
         
         
         <script type="text/javascript" charset="utf-8" src="js/jquery-1.7.1.min.js">  </script>
-        <script type="text/javascript" charset="utf-8" src="js/jquery-ui-1.8.16.custom.min.js">  </script>
         <script type="text/javascript" charset="utf-8" src="js/api.js">  </script>
         <script type="text/javascript" charset="utf-8">
             $(function() {
-                var unparam = function (value) {
-                    var
-                    // Object that holds names => values.
-                    params = {},
-                    // Get query string pieces (separated by &)
-                    pieces = value.split('&'),
-                    // Temporary variables used in loop.
-                    pair, i, l;
-
-                    // Loop through query string pieces and assign params.
-                    for (i = 0, l = pieces.length; i < l; i++) {
-                        pair = pieces[i].split('=', 2);
-                        // Repeated parameters with the same name are overwritten. Parameters
-                        // with no value get set to boolean true.
-                        params[decodeURIComponent(pair[0])] = (pair.length == 2 ?
-                            decodeURIComponent(pair[1].replace(/\+/g, ' ')) : true);
-                    }
-
-                    return params;
-                };
-                
-                function _tokenHashParam() {
-                    return unparam(window.location.hash.slice(1)).access_token;
-                }
-                function _codeParam() {
-                    return unparam(window.location.search.slice(1)).code;
-                }
-                function _redirectUri() {
-                    var uri = window.location.href;
-                    var indexOfHash = uri.indexOf('#');
-                    var indexOfSearch = uri.indexOf('?');
-                    if(indexOfHash >= 0 && indexOfSearch >= 0) {
-                        uri = uri.substring(0, Math.min(indexOfHash, indexOfSearch));
-                    } else if (indexOfHash >= 0 || indexOfSearch >= 0){
-                        uri = uri.substring(0, Math.max(indexOfHash, indexOfSearch));
-                    } else {
-                        // uri = uri
-                    }
-                    
-                    return uri;
-                }
-                
-                var $apiFrame = $("#api-frame").postapi({
-                    url: "http://example2.com:8080/concord/webservice/rest/",
-                    apiUrl: "http://example2.com:8080/concord/js/other/postapi/api.html",
+                var postapi = new PostAPI({
+                    baseurl: "http://example2.com:8080/concord/webservice/rest/",
+                    postapiUrl: "http://example2.com:8080/concord/js/other/postapi/api.html",
                     oauthAuthorizationUrl : "http://example2.com:8080/concord/oauth/authorize.sp",
         			oauthTokenUrl : "http://example2.com:8080/concord/oauth/token.sp",
-        			oauthClientId : "my-trusted-client",
-        			oauthToken : _tokenHashParam(),
-        			oauthCode : _codeParam(),
-        			oauthRedirectUri : _redirectUri()
+        			oauthClientId : "my-trusted-client"
         		});
         		
                 $("#doit").click(function(evt) {
@@ -85,30 +47,26 @@
         				contentType: "application/json",
                         url: "preferences/user",
                         success: function(data) {
-                            console.log("SUCCESS  data: "+JSON.stringify(data));
+                            $("#result").text(JSON.stringify(data));
                         },
                         error: function(jqxhr, data) {
-                            console.log("ERROR jqxhr:"+JSON.stringify(jqxhr)+ "  data:"+JSON.stringify(data));
+                            $("#result").text("ERROR jqxhr:"+JSON.stringify(jqxhr)+ "  data:"+JSON.stringify(data));
                         },
                         complete: function(jqxhr, data) {
-                            console.log("COMPLETE jqxhr:"+JSON.stringify(jqxhr)+ "  data:"+JSON.stringify(data));
+                            $("#result").text("COMPLETE jqxhr:"+JSON.stringify(jqxhr)+ "  data:"+JSON.stringify(data));
                         }
                     }
-                    // $.ajax(ajaxOpts);
-                    $apiFrame.postapi("sendRequest", ajaxOpts);
+                    postapi.sendRequest(ajaxOpts);
                 });
                 
                 $("#authorizeToken").click(function(evt) {
-                    $apiFrame.postapi("authorizeWithToken");
+                    postapi.authorizeWithToken();
                 });
 
                 $("#authorizeCode").click(function(evt) {
-                    $apiFrame.postapi("authorizeWithCode");
+                    postapi.authorizeWithCode();
                 });
 
-                $("#finishAuth").click(function(evt) {
-                    $apiFrame.postapi("finishAuthorization");
-                });
             })
         </script>
     </body>

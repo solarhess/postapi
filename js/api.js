@@ -1,51 +1,105 @@
 (function() {
     var counter = 1;
+    function unparam(value) {
+        var
+        // Object that holds names => values.
+        params = {},
+        // Get query string pieces (separated by &)
+        pieces = value.split('&'),
+        // Temporary variables used in loop.
+        pair, i, l;
+
+        // Loop through query string pieces and assign params.
+        for (i = 0, l = pieces.length; i < l; i++) {
+            pair = pieces[i].split('=', 2);
+            // Repeated parameters with the same name are overwritten. Parameters
+            // with no value get set to boolean true.
+            params[decodeURIComponent(pair[0])] = (pair.length == 2 ?
+                decodeURIComponent(pair[1].replace(/\+/g, ' ')) : true);
+        }
+
+        return params;
+    };
+    
+    function _tokenHashParam() {
+        return unparam(window.location.hash.slice(1)).access_token;
+    }
+    function _codeParam() {
+        return unparam(window.location.search.slice(1)).code;
+    }
+    function _redirectUri() {
+        var uri = window.location.href;
+        var indexOfHash = uri.indexOf('#');
+        var indexOfSearch = uri.indexOf('?');
+        if(indexOfHash >= 0 && indexOfSearch >= 0) {
+            uri = uri.substring(0, Math.min(indexOfHash, indexOfSearch));
+        } else if (indexOfHash >= 0 || indexOfSearch >= 0){
+            uri = uri.substring(0, Math.max(indexOfHash, indexOfSearch));
+        } else {
+            // uri = uri
+        }
+        
+        return uri;
+    }
+
+    function PostAPI(options) {
+        this._create(options);
+        this._init();
+    }
+
     
     /**
      *
      */
-    var postapi = {
-		options : {
-			url :   "http://example2.com/~solarhess/postapi",
-			apiUrl :   "http://example2.com/~solarhess/postapi/api.html",
-			oauthAuthorizationUrl : null,
-			oauthTokenUrl : null,
-			oauthClientId : null,
-			oauthClientSecret : "",
-			oauthCode : null,
-			oauthToken : null,
-			oauthRedirectUri : null,
-			oauthScope : "read",
-		},
-
+    PostAPI.prototype = {
+        _defaultOptions : function() {
+            return {
+    			url :   "http://example2.com/~solarhess/postapi",
+    			postapiUrl :   "http://example2.com/~solarhess/postapi/api.html",
+    			oauthAuthorizationUrl : null,
+    			oauthTokenUrl : null,
+    			oauthClientId : null,
+    			oauthClientSecret : "",
+    			oauthScope : "read",
+    			oauthToken : _tokenHashParam(),
+    			oauthCode : _codeParam(),
+    			oauthRedirectUri : _redirectUri()
+    		}
+        },
 		/*************************
 		 *    PRIVATE METHODS    *
 		 *************************/
-		_create : function(){
+		_create : function(options){
 		    var $this = this;
-		    $this.$panel = $this.element;
+            
+            /* Map default options to $this.optionName */
+		    $.each($this._defaultOptions(), function(k,v){
+		        $this[k] = v;
+		    });
+		    
 
-		    /* Map options to $this.optionName instead of $this.options.optionName */
-		    $.each($this.options, function(k,v){
+		    /* Map user-defined options to $this.optionName*/
+		    $.each(options, function(k,v){
 		        $this[k] = v;
 		    });
 
 		    // ensure that URL ends with a / character
-		    if(! /\/$/.exec($this.url)) {
-		        $this.url += "/";
+		    if(! /\/$/.exec($this.baseurl)) {
+		        $this.baseurl += "/";
 		    }
 		    
 		    $this.requests = {};
 		    $this.counter = counter++;
 
-		    $this.$iframe = $('<iframe src="'+$this.apiUrl+'"> </iframe>');
-		    $this.$panel.append($this.$iframe);
+		    $this.$iframe = $('<iframe src="'+$this.postapiUrl+'"> </iframe>');
 
 		    $this.$iframe.css("position", "fixed");
 		    $this.$iframe.css("left", "-100px");
 		    $this.$iframe.css("top", "-100px");
 		    $this.$iframe.css("width", "1px");
 		    $this.$iframe.css("height", "1px");
+
+		    document.body.appendChild($this.$iframe.get(0));
 		},
 
 		_init : function() {
@@ -153,7 +207,7 @@
 		    });
 		    
 		    if(! /^http(s?)/.exec(newOptions.url)) {
-    		    newOptions.url = $this.url + newOptions.url;
+    		    newOptions.url = $this.baseurl + newOptions.url;
 		    }
 
 		    if(this._getOAuthAccessToken()) {
@@ -172,7 +226,7 @@
             });
     		
             $this.requests[requestId] = ajaxOptions;
-            $this.$iframe[0].contentWindow.postMessage(message, this.url);
+            $this.$iframe[0].contentWindow.postMessage(message, this.baseurl);
         },
 
         authorizeWithToken : function() {
@@ -193,5 +247,8 @@
                 
     }
 
-    $.widget( 'ui.postapi', postapi);
+    if(typeof window.PostAPI == 'undefined') {
+        window.PostAPI = PostAPI
+    }
+    
 })();
