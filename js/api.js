@@ -1,10 +1,21 @@
 (function() {
     var counter = 1;
     
+    /**
+     *
+     */
     var postapi = {
 		options : {
 			url :   "http://example2.com/~solarhess/postapi",
-			apiUrl :   "http://example2.com/~solarhess/postapi/api.html"
+			apiUrl :   "http://example2.com/~solarhess/postapi/api.html",
+			oauthAuthorizationUrl : null,
+			oauthTokenUrl : null,
+			oauthClientId : null,
+			oauthClientSecret : "",
+			oauthCode : null,
+			oauthToken : null,
+			oauthRedirectUri : null,
+			oauthScope : "read",
 		},
 
 		/*************************
@@ -41,15 +52,50 @@
 		    var $this = this;
 		    $(window).unbind('message.postapi'+$this.counter);
             $(window).bind('message.postapi'+$this.counter, function(evt) {
-                
                 var message = JSON.parse(evt.originalEvent.data);
         		if(message.from == "postapi" && message.type) {
         		    $this._messageReceived(message);
         		}
             });
             
+            if(this.oauthCode) {
+                this._finishAuthorization();
+            } 
+            if(this.oauthToken) {
+                this.oauthTokenData = {
+                    access_token: this.oauthToken, 
+                    token_type: "bearer",
+                    scope: $this.oauthScope
+                }
+            }
         },
         
+        _finishAuthorization : function() {
+            var $this = this;
+            this.sendRequest({
+                url: this.oauthTokenUrl,
+                type: "POST",
+                dataType: "json",
+				data: {
+				    grant_type: "authorization_code",
+				    code: this.oauthCode,
+				    redirect_uri: this.oauthRedirectUri,
+				    scope: $this.oauthScope,
+				    username: this.oauthClientId,
+				    password: this.oauthClientSecret
+				},
+				success : function(data) {
+				    $this._handleOAuthTokenResponse(data);
+				}
+            })
+        },
+        
+        _getOAuthAccessToken : function() {
+            if(this.oauthTokenData) {
+                return this.oauthTokenData.access_token;
+            }
+        },
+
         _messageReceived : function(message) {
             if(message.type == "AjaxResponseSuccess") {
                 this._handleResponseSuccess(message);
@@ -84,9 +130,12 @@
                 ajaxOptions.complete(message.jqxhr, message.data);
             }
         },
-
         _generateId : function() {
             return "postapi_"+(new Date()).getTime()+"_"+Math.random();
+        },
+        
+        _handleOAuthTokenResponse : function(data) {
+            this.oauthTokenData = data;
         },
         
         sendRequest : function(ajaxOptions) {
@@ -103,7 +152,17 @@
                 }
 		    });
 		    
-		    newOptions.url = $this.url + newOptions.url;
+		    if(! /^http(s?)/.exec(newOptions.url)) {
+    		    newOptions.url = $this.url + newOptions.url;
+		    }
+
+		    if(this._getOAuthAccessToken()) {
+    		    if(! newOptions.headers) {
+    		        newOptions.headers = {};
+    		    }
+    		    newOptions.headers["Authorization"] = "Bearer " + this._getOAuthAccessToken();
+		    }
+		    
 		    
 		    message = JSON.stringify({
                 from: 'postapi',
@@ -113,9 +172,25 @@
             });
     		
             $this.requests[requestId] = ajaxOptions;
-            $this.$iframe[0].contentWindow.postMessage(message,"*");
+            $this.$iframe[0].contentWindow.postMessage(message, this.url);
+        },
+
+        authorizeWithToken : function() {
+            var authUrl = this.oauthAuthorizationUrl +  "?response_type=token&" + 
+                    "client_id=" + this.oauthClientId +
+                    "&scope=read" + 
+                    "&redirect_uri=" + this.oauthRedirectUri;
+            window.location = authUrl;
+        },
+
+        authorizeWithCode : function() {
+            var authUrl = this.oauthAuthorizationUrl +  "?response_type=code&" + 
+                    "client_id=" + this.oauthClientId +
+                    "&scope=read" + 
+                    "&redirect_uri=" + this.oauthRedirectUri;
+            window.location = authUrl;            
         }
-        
+                
     }
 
     $.widget( 'ui.postapi', postapi);
