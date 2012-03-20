@@ -210,7 +210,7 @@
                 newOptions.url = $this.baseurl + newOptions.url;
             }
 
-            if(this._getOAuthAccessToken()) {
+            if(this._getOAuthAccessToken() &&  ! ajaxOptions.username) {
                 if(! newOptions.headers) {
                     newOptions.headers = {};
                 }
