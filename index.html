@@ -17,10 +17,15 @@
 
         <h2>OAuth</h2>
         <p>
-        <a href="#" id="authorizeToken">Authorize Implicit!</a>
-        <a href="#" id="authorizeCode">Authorize Code!</a>
+        <a href="#" id="authorizeToken">Authorize Implicit</a>
+        <a href="#" id="authorizeCode">Authorize Code</a>
+        <a href="#" id="refreshToken">Refresh Access Token</a>
         </p>
-
+        <p>
+            <label for="username">email</label><input type="text" id="username" name="username"/><br/>
+            <label for="password">password</label><input type="password" id="password" name="password"/><br/>
+            <a href="#" id="authorizeUsername">Authorize Username/Password</a>
+        </p>            
 
         <h2>Data</h2>
         <a href="#" id="doit">Do It!</a>
@@ -28,8 +33,8 @@
             (no results)
         </div>
         <div id="api-frame"> </div>
-
         
+        <h2>
         
         <script type="text/javascript" charset="utf-8" src="js/jquery-1.7.1.min.js">  </script>
         <script type="text/javascript" charset="utf-8" src="js/api.js">  </script>
@@ -40,7 +45,7 @@
                     postapiUrl: "http://example2.com:8080/concord/js/other/postapi/api.html",
                     oauthAuthorizationUrl : "http://example2.com:8080/concord/oauth/authorize.sp",
                     oauthTokenUrl : "http://example2.com:8080/concord/oauth/token.sp",
-                    oauthClientId : "b4551a54-5de5-4c19-8631-0fea5a21560e",
+                    oauthClientId : "testing-client",
                     oauthClientSecret : "secret"
                 });
                 
@@ -64,11 +69,18 @@
                 });
                 
                 $("#authorizeToken").click(function(evt) {
+                    evt.preventDefault();
                     postapi.authorizeWithToken();
                 });
 
                 $("#authorizeCode").click(function(evt) {
+                    evt.preventDefault();
                     postapi.authorizeWithCode();
+                });
+                
+                $("#authorizeUsername").click(function(evt){
+                    evt.preventDefault();
+                    postapi.authorizeWithPassword($("#username").val(), $("#password").val());
                 });
 
             })

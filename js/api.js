@@ -130,18 +130,18 @@
                 url: this.oauthTokenUrl,
                 type: "POST",
                 dataType: "json",
+                username: this.oauthClientId,
+                password: this.oauthClientSecret,
                 data: {
                     grant_type: "authorization_code",
                     code: this.oauthCode,
                     redirect_uri: this.oauthRedirectUri,
-                    scope: $this.oauthScope,
-                    username: this.oauthClientId,
-                    password: this.oauthClientSecret
+                    scope: $this.oauthScope
                 },
                 success : function(data) {
                     $this._handleOAuthTokenResponse(data);
                 }
-            })
+            });
         },
         
         _getOAuthAccessToken : function() {
@@ -243,8 +243,25 @@
                     "&scope=read" + 
                     "&redirect_uri=" + this.oauthRedirectUri;
             window.location = authUrl;            
+        },
+        
+        authorizeWithPassword : function(username, password) {
+            var $this = this;
+            this.sendRequest({
+                url: this.oauthTokenUrl,
+                type: "POST",
+                dataType: "json",
+                data: {
+                    grant_type: "password",
+                    username: username,
+                    password: password,
+                    scope: $this.oauthScope
+                },
+                success : function(data) {
+                    $this._handleOAuthTokenResponse(data);
+                }
+            });
         }
-                
     }
 
     if(typeof window.PostAPI == 'undefined') {
